@@ -157,6 +157,7 @@ def main():
                 public_tests=problem.public_test_cases,
                 private_tests=problem.private_test_cases,
             ).model_dump_json())
+            f.write("\n")
 
 
 if __name__ == "__main__":
