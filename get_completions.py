@@ -199,6 +199,12 @@ async def main():
         help="Path to grouped JSONL output file (default: output_dir/completions.jsonl)",
     )
     parser.add_argument(
+        "--completed_ids",
+        type=str,
+        default=None,
+        help="Path to already finished ids (default: labelled_data/successful_ids.txt)",
+    )
+    parser.add_argument(
         "--max_concurrency",
         type=int,
         default=MAX_CONCURRENCY,
@@ -276,6 +282,12 @@ async def main():
     else:
         # Create/clear the JSONL files if overwrite is set or files don't exist
         raw_jsonl_mode = "w"
+
+    # Add completed ids
+    if args.completed_ids is not None and os.path.exists(args.completed_ids):
+        with open(args.completed_ids, "r") as f:
+            for line in f:
+                completed_prompt_ids.add(line.strip())
 
     # Create or truncate files as needed
     if raw_jsonl_mode == "w":

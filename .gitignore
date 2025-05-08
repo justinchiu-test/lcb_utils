@@ -11,4 +11,6 @@ wheels/
 
 *.pkl
 completions/
+completions2/
 labelled_data/
+
