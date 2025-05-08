@@ -1,9 +1,21 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "lcb_utils"
 version = "0.1.0"
-description = "Add your description here"
+description = "Utilities for working with LiveCodeBench datasets"
 readme = "README.md"
 requires-python = ">=3.11"
+authors = [
+    {name = "Justin Chiu", email = "justinchiu@cohere.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "datasets>=3.6.0",
     "fuzzywuzzy>=0.18.0",
@@ -17,3 +29,12 @@ dependencies = [
     "ruff>=0.11.8",
     "tenacity>=8.2.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+]
+
+[tool.setuptools]
+packages = ["lcb_utils"]
