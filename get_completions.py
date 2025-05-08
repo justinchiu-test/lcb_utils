@@ -276,7 +276,7 @@ async def main():
     else:
         # Create/clear the JSONL files if overwrite is set or files don't exist
         raw_jsonl_mode = "w"
-        
+
     # Create or truncate files as needed
     if raw_jsonl_mode == "w":
         # Create/clear the output files
@@ -326,13 +326,13 @@ async def main():
     tasks = []
     prompts_to_process = 0
     prompts_skipped = 0
-    
+
     for i, (prompt, prompt_id) in enumerate(zip(selected_prompts, selected_ids)):
         # Skip prompts that have already been successfully processed
         if not args.overwrite and prompt_id in completed_prompt_ids:
             prompts_skipped += 1
             continue
-            
+
         prompts_to_process += 1
         task = get_completions_batch(
             client=client,
@@ -348,7 +348,7 @@ async def main():
             max_tokens=args.max_tokens,
         )
         tasks.append(task)
-    
+
     print(
         f"Creating tasks for {prompts_to_process} prompts with {args.num_completions} completions each..."
     )
@@ -363,18 +363,20 @@ async def main():
     else:
         print("No prompts to process - all have been completed already")
         results = []
-        start_time = time.time()  # Set start time to now for consistent summary generation
+        start_time = (
+            time.time()
+        )  # Set start time to now for consistent summary generation
 
     # Calculate statistics for this run
     elapsed_time = time.time() - start_time
     new_successful = sum(1 for r in results if r.success)
     new_failed = len(results) - new_successful
     new_completions = sum(len(r.completions) for r in results if r.success)
-    
+
     # Get total statistics including already completed prompts
     total_successful = len(completed_prompt_ids) + new_successful
     total_failed = failed = num_prompts - total_successful
-    
+
     # Calculate total completions by reading the raw file
     total_completions = 0
     try:
@@ -399,7 +401,9 @@ async def main():
         "failed_prompts": total_failed,
         "model": args.model,
         "elapsed_time_this_run": elapsed_time,
-        "average_time_per_prompt": elapsed_time / len(results) if len(results) > 0 else 0,
+        "average_time_per_prompt": elapsed_time / len(results)
+        if len(results) > 0
+        else 0,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
         "raw_jsonl_file": args.raw_jsonl,
         "grouped_jsonl_file": args.grouped_jsonl,
@@ -415,21 +419,23 @@ async def main():
             f"Success rate this run: {new_successful}/{len(results)} prompts "
             f"({new_successful / len(results) * 100 if len(results) > 0 else 0:.2f}%)"
         )
-        print(
-            f"Generated {new_completions} new completions in this run"
-        )
+        print(f"Generated {new_completions} new completions in this run")
         if len(results) > 0:
-            print(f"Average time per prompt this run: {elapsed_time / len(results):.2f}s")
-    
+            print(
+                f"Average time per prompt this run: {elapsed_time / len(results):.2f}s"
+            )
+
     # Print overall statistics
-    print(f"\nOverall progress: {total_successful}/{num_prompts} prompts completed "
-          f"({total_successful / num_prompts * 100:.2f}%)")
+    print(
+        f"\nOverall progress: {total_successful}/{num_prompts} prompts completed "
+        f"({total_successful / num_prompts * 100:.2f}%)"
+    )
     print(f"Total completions across all runs: {total_completions}")
     print(f"Raw results saved to: {args.raw_jsonl}")
 
     # Create final grouped output in the desired format
     print("Creating grouped output file...")
-    
+
     # Always reprocess the entire raw file to ensure the grouped output is complete
     grouped_data = {}
     try:
@@ -445,7 +451,7 @@ async def main():
                     }
     except Exception as e:
         logger.error(f"Error reading raw JSONL file for grouped output: {e}")
-        
+
     # Also add any newly processed results
     for result in results:
         if result.success:
@@ -454,15 +460,15 @@ async def main():
                 "prompt": result.prompt,
                 "completions": result.completions,
             }
-    
+
     # Sort results by prompt ID for consistency
     sorted_records = sorted(grouped_data.values(), key=lambda x: x["id"])
-    
+
     # Write the grouped output
     with open(args.grouped_jsonl, "w") as f:
         for record in sorted_records:
             f.write(json.dumps(record) + "\n")
-            
+
     print(f"Wrote {len(sorted_records)} records to grouped output file")
 
     print(f"Grouped results saved to: {args.grouped_jsonl}")

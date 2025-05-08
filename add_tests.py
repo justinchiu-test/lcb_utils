@@ -110,6 +110,7 @@ class CodeGenerationProblem(BaseModel):
             ),
         }
 
+
 class Problem(BaseModel):
     id: str
     prompt: str
@@ -118,8 +119,15 @@ class Problem(BaseModel):
     private_tests: list[Test]
 
 
-def load_code_generation_dataset(release_version="release_v1", start_date=None, end_date=None) -> list[CodeGenerationProblem]:
-    examples = load_dataset("livecodebench/code_generation_lite", split="test", version_tag=release_version, trust_remote_code=True)
+def load_code_generation_dataset(
+    release_version="release_v1", start_date=None, end_date=None
+) -> list[CodeGenerationProblem]:
+    examples = load_dataset(
+        "livecodebench/code_generation_lite",
+        split="test",
+        version_tag=release_version,
+        trust_remote_code=True,
+    )
     dataset = []
     for x in examples:
         x["contest_date"] = datetime.fromisoformat(x["contest_date"])
@@ -141,7 +149,7 @@ def load_code_generation_dataset(release_version="release_v1", start_date=None, 
 
 def main():
     dataset = load_code_generation_dataset(release_version="v1_v3")
-    id2problem= {x.question_id: x for x in dataset}
+    id2problem = {x.question_id: x for x in dataset}
 
     with open("completions/completions.jsonl", "r") as f:
         samples = [json.loads(line) for line in f]
@@ -150,13 +158,15 @@ def main():
         for sample in samples:
             id = sample["id"]
             problem = id2problem[id]
-            f.write(Problem(
-                id=id,
-                prompt=problem.question_content,
-                completions=sample["completions"],
-                public_tests=problem.public_test_cases,
-                private_tests=problem.private_test_cases,
-            ).model_dump_json())
+            f.write(
+                Problem(
+                    id=id,
+                    prompt=problem.question_content,
+                    completions=sample["completions"],
+                    public_tests=problem.public_test_cases,
+                    private_tests=problem.private_test_cases,
+                ).model_dump_json()
+            )
             f.write("\n")
 
 
